@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>PhishLock AI</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .result-box {
+            border-radius: 5px;
+            padding: 15px;
+            margin-top: 20px;
+        }
+        .suspicious {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+        }
+        .safe {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+        }
+        .url-list {
+            font-family: monospace;
+            background-color: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            margin-top: 10px;
+        }
+        .domain-item {
+            margin-bottom: 5px;
+            padding: 8px;
+            border-radius: 4px;
+        }
+        .high-risk {
+            background-color: #f8d7da;
+        }
+        .medium-risk {
+            background-color: #fff3cd;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-5">
+        <div class="row">
+            <div class="col">
+                <h1>PhishLock AI</h1>
+                <p class="lead">Advanced Phishing Detection using AI and Domain Intelligence</p>
+            </div>
+        </div>
+        
+        <div class="row mt-4">
+            <div class="col">
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Analyze Message</h3>
+                    </div>
+                    <div class="card-body">
+                        <form id="phishing-form">
+                            <div class="mb-3">
+                                <label for="sender" class="form-label">Sender Email</label>
+                                <input type="email" class="form-control" id="sender" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="subject" class="form-label">Subject</label>
+                                <input type="text" class="form-control" id="subject">
+                            </div>
+                            <div class="mb-3">
+                                <label for="content" class="form-label">Message Content</label>
+                                <textarea class="form-control" id="content" rows="6" required></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Analyze</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div id="result" class="row mt-4" style="display: none;">
+            <div class="col">
+                <div id="result-box" class="result-box">
+                    <h3 id="result-title"></h3>
+                    <p id="result-confidence"></p>
+                    
+                    <h4>Analysis:</h4>
+                    <ul id="result-reasons"></ul>
+                    
+                    <div id="domains-section" style="display: none;">
+                        <h4>Suspicious Domains:</h4>
+                        <div id="suspicious-domains"></div>
+                    </div>
+                    
+                    <div id="urls-section" style="display: none;">
+                        <h4>Extracted URLs:</h4>
+                        <div id="extracted-urls" class="url-list"></div>
+                    </div>
+                    
+                    <div class="mt-4">
+                        <h4>What to do next:</h4>
+                        <div id="recommendations"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row mt-5 mb-5">
+            <div class="col">
+                <div class="card">
+                    <div class="card-header">
+                        <h3>PhishLock AI Features</h3>
+                    </div>
+                    <div class="card-body">
+                        <ul>
+                            <li><strong>Multi-layered Analysis</strong> - Combines AI and domain reputation checks</li>
+                            <li><strong>URL & Domain Evaluation</strong> - Checks links against known phishing domains</li>
+                            <li><strong>Content Analysis</strong> - Detects suspicious language and social engineering tactics</li>
+                            <li><strong>Open Source Intelligence</strong> - Uses community-maintained threat intelligence</li>
+                            <li><strong>Educational Recommendations</strong> - Provides actionable next steps</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        document.getElementById('phishing-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const sender = document.getElementById('sender').value;
+            const subject = document.getElementById('subject').value;
+            const content = document.getElementById('content').value;
+            
+            // Show loading state
+            document.getElementById('result').style.display = 'none';
+            
+            try {
+                const response = await fetch('/analyze', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        sender,
+                        subject,
+                        content,
+                    }),
+                });
+                
+                const result = await response.json();
+                
+                // Update result section
+                const resultBox = document.getElementById('result-box');
+                const resultTitle = document.getElementById('result-title');
+                const resultConfidence = document.getElementById('result-confidence');
+                const resultReasons = document.getElementById('result-reasons');
+                const domainsSection = document.getElementById('domains-section');
+                const suspiciousDomains = document.getElementById('suspicious-domains');
+                const urlsSection = document.getElementById('urls-section');
+                const extractedUrls = document.getElementById('extracted-urls');
+                const recommendations = document.getElementById('recommendations');
+                
+                // Clear previous results
+                resultReasons.innerHTML = '';
+                suspiciousDomains.innerHTML = '';
+                extractedUrls.innerHTML = '';
+                recommendations.innerHTML = '';
+                
+                if (result.is_suspicious) {
+                    resultBox.className = 'result-box suspicious';
+                    resultTitle.textContent = '⚠️ Suspicious Message Detected';
+                } else {
+                    resultBox.className = 'result-box safe';
+                    resultTitle.textContent = '✅ Message Appears Safe';
+                }
+                
+                resultConfidence.textContent = `Confidence: ${Math.round(result.confidence * 100)}%`;
+                
+                // Add reasons
+                result.reasons.forEach(reason => {
+                    const li = document.createElement('li');
+                    li.textContent = reason;
+                    resultReasons.appendChild(li);
+                });
+                
+                // Add suspicious domains if any
+                if (result.suspicious_domains && result.suspicious_domains.length > 0) {
+                    domainsSection.style.display = 'block';
+                    
+                    result.suspicious_domains.forEach(domain => {
+                        const div = document.createElement('div');
+                        div.className = domain.score > 0.7 ? 'domain-item high-risk' : 'domain-item medium-risk';
+                        
+                        let content = `<strong>${domain.domain}</strong> - Risk: ${Math.round(domain.score * 100)}%`;
+                        if (domain.in_blocklist) {
+                            content += ' <span class="badge bg-danger">In Blocklist</span>';
+                        }
+                        
+                        if (domain.indicators && domain.indicators.length > 0) {
+                            content += '<ul>';
+                            domain.indicators.forEach(indicator => {
+                                content += `<li>${indicator}</li>`;
+                            });
+                            content += '</ul>';
+                        }
+                        
+                        div.innerHTML = content;
+                        suspiciousDomains.appendChild(div);
+                    });
+                } else {
+                    domainsSection.style.display = 'none';
+                }
+                
+                // Add extracted URLs if any
+                if (result.extracted_urls && result.extracted_urls.length > 0) {
+                    urlsSection.style.display = 'block';
+                    
+                    result.extracted_urls.forEach(url => {
+                        const div = document.createElement('div');
+                        div.textContent = url;
+                        extractedUrls.appendChild(div);
+                    });
+                } else {
+                    urlsSection.style.display = 'none';
+                }
+                
+                // Add recommendations
+                if (result.is_suspicious) {
+                    recommendations.innerHTML = `
+                        <div class="alert alert-danger">
+                            <h5>This message appears to be a phishing attempt!</h5>
+                            <ul>
+                                <li>Do not click any links or download attachments</li>
+                                <li>Do not reply to the sender</li>
+                                <li>Report this email to your IT security team</li>
+                                <li>If you've already clicked links or provided information, change your passwords immediately</li>
+                            </ul>
+                        </div>
+                    `;
+                } else {
+                    recommendations.innerHTML = `
+                        <div class="alert alert-success">
+                            <h5>This message appears to be legitimate</h5>
+                            <p>However, always be cautious when:</p>
+                            <ul>
+                                <li>Clicking links in emails</li>
+                                <li>Downloading attachments</li>
+                                <li>Providing personal or financial information</li>
+                            </ul>
+                        </div>
+                    `;
+                }
+                
+                // Show result
+                document.getElementById('result').style.display = 'block';
+            } catch (error) {
+                console.error('Error:', error);
+                alert('An error occurred while analyzing the message');
+            }
+        });
+    </script>
+</body>
+</html>
