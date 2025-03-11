@@ -1,262 +1,372 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>PhishLock AI</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PhishLock AI - Advanced Phishing Detection</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-        .result-box {
-            border-radius: 5px;
-            padding: 15px;
-            margin-top: 20px;
-        }
-        .suspicious {
-            background-color: #f8d7da;
-            border: 1px solid #f5c6cb;
-        }
-        .safe {
-            background-color: #d4edda;
-            border: 1px solid #c3e6cb;
-        }
-        .url-list {
-            font-family: monospace;
-            background-color: #f8f9fa;
-            padding: 10px;
-            border-radius: 4px;
-            margin-top: 10px;
-        }
-        .domain-item {
-            margin-bottom: 5px;
-            padding: 8px;
-            border-radius: 4px;
-        }
-        .high-risk {
-            background-color: #f8d7da;
-        }
-        .medium-risk {
-            background-color: #fff3cd;
-        }
-    </style>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="/static/css/styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-    <div class="container mt-5">
-        <div class="row">
-            <div class="col">
-                <h1>PhishLock AI</h1>
-                <p class="lead">Advanced Phishing Detection using AI and Domain Intelligence</p>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#"><i class="bi bi-shield-lock-fill"></i> PhishLock AI</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#analyzer">Analyzer</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#features">Features</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#stats">Stats</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#about">About</a>
+                    </li>
+                </ul>
             </div>
         </div>
-        
-        <div class="row mt-4">
-            <div class="col">
-                <div class="card">
-                    <div class="card-header">
-                        <h3>Analyze Message</h3>
-                    </div>
-                    <div class="card-body">
-                        <form id="phishing-form">
-                            <div class="mb-3">
-                                <label for="sender" class="form-label">Sender Email</label>
-                                <input type="email" class="form-control" id="sender" required>
-                            </div>
-                            <div class="mb-3">
-                                <label for="subject" class="form-label">Subject</label>
-                                <input type="text" class="form-control" id="subject">
-                            </div>
-                            <div class="mb-3">
-                                <label for="content" class="form-label">Message Content</label>
-                                <textarea class="form-control" id="content" rows="6" required></textarea>
-                            </div>
-                            <button type="submit" class="btn btn-primary">Analyze</button>
-                        </form>
+    </nav>
+
+    <!-- Hero Section -->
+    <header class="hero-section">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-6">
+                    <h1 class="hero-title">Advanced AI-Powered Phishing Detection</h1>
+                    <p class="hero-subtitle">Combining Large Language Models, Behavioral Analysis, and Threat Intelligence to detect sophisticated phishing attacks.</p>
+                    <a href="#analyzer" class="btn btn-primary btn-lg">Try It Now</a>
+                </div>
+                <div class="col-lg-6">
+                    <div class="hero-image">
+                        <img src="/static/images/shield.svg" alt="PhishLock AI Protection" class="img-fluid">
                     </div>
                 </div>
             </div>
         </div>
-        
-        <div id="result" class="row mt-4" style="display: none;">
-            <div class="col">
-                <div id="result-box" class="result-box">
-                    <h3 id="result-title"></h3>
-                    <p id="result-confidence"></p>
-                    
-                    <h4>Analysis:</h4>
-                    <ul id="result-reasons"></ul>
-                    
-                    <div id="domains-section" style="display: none;">
-                        <h4>Suspicious Domains:</h4>
-                        <div id="suspicious-domains"></div>
+    </header>
+
+    <!-- Analyzer Section -->
+    <section id="analyzer" class="analyzer-section">
+        <div class="container">
+            <h2 class="section-title text-center">Phishing Message Analyzer</h2>
+            <p class="section-subtitle text-center mb-5">Submit a suspicious email or message for instant AI analysis</p>
+            
+            <div class="row">
+                <div class="col-lg-6">
+                    <div class="card input-card">
+                        <div class="card-header">
+                            <h3><i class="bi bi-envelope"></i> Message Details</h3>
+                        </div>
+                        <div class="card-body">
+                            <form id="phishing-form">
+                                <div class="mb-3">
+                                    <label for="sender" class="form-label">Sender Email</label>
+                                    <input type="email" class="form-control" id="sender" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="subject" class="form-label">Subject</label>
+                                    <input type="text" class="form-control" id="subject">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="content" class="form-label">Message Content</label>
+                                    <textarea class="form-control" id="content" rows="8" required></textarea>
+                                </div>
+                                <div class="mb-3 form-check">
+                                    <input type="checkbox" class="form-check-input" id="has-html">
+                                    <label class="form-check-label" for="has-html">Message contains HTML</label>
+                                </div>
+                                <div class="mb-3 html-input" style="display: none;">
+                                    <label for="html-content" class="form-label">HTML Content (optional)</label>
+                                    <textarea class="form-control" id="html-content" rows="4"></textarea>
+                                </div>
+                                <button type="submit" class="btn btn-primary w-100">
+                                    <span id="submit-text">Analyze Message</span>
+                                    <span id="loading-spinner" class="spinner-border spinner-border-sm" role="status" style="display: none;"></span>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-lg-6">
+                    <div id="result-container" style="display: none;">
+                        <div class="card result-card">
+                            <div class="card-header" id="result-header">
+                                <h3 id="result-title"><i class="bi bi-check-circle"></i> Analysis Results</h3>
+                            </div>
+                            <div class="card-body">
+                                <div class="result-summary mb-4">
+                                    <div class="row align-items-center">
+                                        <div class="col-md-6">
+                                            <div id="verdict-container" class="text-center p-3 rounded">
+                                                <h2 id="verdict">Analyzing...</h2>
+                                                <p id="confidence">Confidence: 0%</p>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="gauge-container">
+                                                <canvas id="gauge-chart"></canvas>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <h4><i class="bi bi-list-check"></i> Detection Reasons</h4>
+                                <ul id="result-reasons" class="reasons-list mb-4"></ul>
+                                
+                                <div id="brands-section" style="display: none;">
+                                    <h4><i class="bi bi-building"></i> Brand Impersonation</h4>
+                                    <div id="brand-info" class="brand-info mb-4"></div>
+                                </div>
+                                
+                                <div id="tactics-section" style="display: none;">
+                                    <h4><i class="bi bi-exclamation-triangle"></i> Manipulation Tactics</h4>
+                                    <div id="tactics-info" class="tactics-info mb-4"></div>
+                                </div>
+                                
+                                <div id="urls-section" style="display: none;">
+                                    <h4><i class="bi bi-link-45deg"></i> Suspicious URLs</h4>
+                                    <div id="urls-info" class="urls-info mb-4"></div>
+                                </div>
+                                
+                                <div class="recommendations-section">
+                                    <h4><i class="bi bi-lightbulb"></i> Recommendations</h4>
+                                    <div id="recommendation" class="recommendation p-3 rounded"></div>
+                                </div>
+                                
+                                <div class="mt-4 text-center">
+                                    <button id="view-details-btn" class="btn btn-outline-primary btn-sm">
+                                        <i class="bi bi-arrow-down-circle"></i> View Technical Details
+                                    </button>
+                                </div>
+                                
+                                <div id="technical-details" class="technical-details mt-3" style="display: none;">
+                                    <h5>Technical Analysis Details</h5>
+                                    <div class="table-responsive">
+                                        <table class="table table-sm">
+                                            <tbody id="technical-details-content"></tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-footer">
+                                <div class="feedback-section">
+                                    <p>Was this analysis helpful?</p>
+                                    <div class="btn-group">
+                                        <button id="feedback-correct" class="btn btn-sm btn-outline-success">
+                                            <i class="bi bi-hand-thumbs-up"></i> Correct
+                                        </button>
+                                        <button id="feedback-incorrect" class="btn btn-sm btn-outline-danger">
+                                            <i class="bi bi-hand-thumbs-down"></i> Incorrect
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     
-                    <div id="urls-section" style="display: none;">
-                        <h4>Extracted URLs:</h4>
-                        <div id="extracted-urls" class="url-list"></div>
-                    </div>
-                    
-                    <div class="mt-4">
-                        <h4>What to do next:</h4>
-                        <div id="recommendations"></div>
+                    <div id="analysis-placeholder" class="text-center py-5">
+                        <i class="bi bi-arrow-left-circle placeholder-icon"></i>
+                        <h3 class="mt-3">Enter a message to analyze</h3>
+                        <p>Our AI will check for phishing indicators and provide a detailed security assessment.</p>
                     </div>
                 </div>
             </div>
         </div>
-        
-        <div class="row mt-5 mb-5">
-            <div class="col">
-                <div class="card">
-                    <div class="card-header">
-                        <h3>PhishLock AI Features</h3>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="features-section">
+        <div class="container">
+            <h2 class="section-title text-center">Advanced Defense Features</h2>
+            <p class="section-subtitle text-center mb-5">Multi-layered technology to detect even the most sophisticated phishing attempts</p>
+            
+            <div class="row">
+                <div class="col-md-4 mb-4">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="bi bi-cpu"></i>
+                        </div>
+                        <h3>RAG-Enhanced AI Analysis</h3>
+                        <p>Our system combines Large Language Models with a knowledge base of phishing patterns using Retrieval-Augmented Generation (RAG).</p>
                     </div>
-                    <div class="card-body">
+                </div>
+                
+                <div class="col-md-4 mb-4">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="bi bi-graph-up"></i>
+                        </div>
+                        <h3>Behavioral Analysis</h3>
+                        <p>Detects psychological manipulation tactics like urgency, fear, and authority that are commonly used in phishing attempts.</p>
+                    </div>
+                </div>
+                
+                <div class="col-md-4 mb-4">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="bi bi-link"></i>
+                        </div>
+                        <h3>Advanced URL Analysis</h3>
+                        <p>Identifies suspicious domains, typosquatting, URL shorteners, and other deceptive link techniques.</p>
+                    </div>
+                </div>
+                
+                <div class="col-md-4 mb-4">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="bi bi-building"></i>
+                        </div>
+                        <h3>Brand Impersonation Detection</h3>
+                        <p>Recognizes when attackers pretend to be trusted companies like Microsoft, Apple, or financial institutions.</p>
+                    </div>
+                </div>
+                
+                <div class="col-md-4 mb-4">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="bi bi-shield-check"></i>
+                        </div>
+                        <h3>Threat Intelligence</h3>
+                        <p>Connects to databases of known phishing domains and attack patterns for real-time protection.</p>
+                    </div>
+                </div>
+                
+                <div class="col-md-4 mb-4">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="bi bi-lightning"></i>
+                        </div>
+                        <h3>Real-time Analysis</h3>
+                        <p>Get immediate results with detailed explanations and actionable security recommendations.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Stats Section -->
+    <section id="stats" class="stats-section">
+        <div class="container">
+            <h2 class="section-title text-center">System Performance</h2>
+            <p class="section-subtitle text-center mb-5">Real-time statistics on PhishLock AI's detection capabilities</p>
+            
+            <div class="row">
+                <div class="col-lg-8 offset-lg-2">
+                    <div class="card stats-card">
+                        <div class="card-body">
+                            <div class="row mb-4">
+                                <div class="col-md-6 text-center">
+                                    <div class="stats-chart-container">
+                                        <canvas id="detection-chart"></canvas>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="stats-metrics">
+                                        <div class="metric">
+                                            <h4 id="total-analyses">-</h4>
+                                            <p>Total Analyses</p>
+                                        </div>
+                                        <div class="metric">
+                                            <h4 id="phishing-percentage">-</h4>
+                                            <p>Phishing Detection Rate</p>
+                                        </div>
+                                        <div class="metric">
+                                            <h4 id="avg-time">-</h4>
+                                            <p>Average Analysis Time</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h5><i class="bi bi-exclamation-triangle"></i> Top Tactics Detected</h5>
+                                    <div id="top-tactics"></div>
+                                </div>
+                                <div class="col-md-6">
+                                    <h5><i class="bi bi-building"></i> Top Impersonated Brands</h5>
+                                    <div id="top-brands"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="about" class="about-section">
+        <div class="container">
+            <h2 class="section-title text-center">About PhishLock AI</h2>
+            <p class="section-subtitle text-center mb-5">Created for the SANS AI Cybersecurity Hackathon</p>
+            
+            <div class="row mb-5">
+                <div class="col-lg-8 offset-lg-2">
+                    <div class="about-content">
+                        <p>PhishLock AI is an advanced open-source phishing detection platform that combines the power of large language models, behavioral analysis, and threat intelligence to detect even the most sophisticated phishing attempts.</p>
+                        
+                        <p>According to the 2024 IBM Cost of a Data Breach Report, phishing is the #2 cause of data breaches, averaging $4.88M per breach. As attackers increasingly use AI to create convincing phishing messages, traditional detection methods are becoming less effective.</p>
+                        
+                        <p>Our solution addresses this challenge by using a multi-layered approach:</p>
+                        
                         <ul>
-                            <li><strong>Multi-layered Analysis</strong> - Combines AI and domain reputation checks</li>
-                            <li><strong>URL & Domain Evaluation</strong> - Checks links against known phishing domains</li>
-                            <li><strong>Content Analysis</strong> - Detects suspicious language and social engineering tactics</li>
-                            <li><strong>Open Source Intelligence</strong> - Uses community-maintained threat intelligence</li>
-                            <li><strong>Educational Recommendations</strong> - Provides actionable next steps</li>
+                            <li><strong>RAG-Enhanced AI Analysis:</strong> Using retrieval-augmented generation to provide the AI with up-to-date phishing knowledge</li>
+                            <li><strong>Behavioral Analysis:</strong> Detecting manipulation tactics common in phishing</li>
+                            <li><strong>Advanced URL Analysis:</strong> Identifying suspicious domains and links</li>
+                            <li><strong>Brand Impersonation Detection:</strong> Recognizing when trusted brands are being imitated</li>
                         </ul>
+                        
+                        <p>PhishLock AI is open-source and designed to be easily integrated into existing security infrastructures.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-lg-8 offset-lg-2">
+                    <div class="github-section text-center">
+                        <h4>Open Source on GitHub</h4>
+                        <p>View the complete source code, contribute, or deploy your own instance</p>
+                        <a href="https://github.com/yourusername/phishlock-ai" target="_blank" class="btn btn-outline-primary">
+                            <i class="bi bi-github"></i> View on GitHub
+                        </a>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
-    
-    <script>
-        document.getElementById('phishing-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            const sender = document.getElementById('sender').value;
-            const subject = document.getElementById('subject').value;
-            const content = document.getElementById('content').value;
-            
-            // Show loading state
-            document.getElementById('result').style.display = 'none';
-            
-            try {
-                const response = await fetch('/analyze', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        sender,
-                        subject,
-                        content,
-                    }),
-                });
-                
-                const result = await response.json();
-                
-                // Update result section
-                const resultBox = document.getElementById('result-box');
-                const resultTitle = document.getElementById('result-title');
-                const resultConfidence = document.getElementById('result-confidence');
-                const resultReasons = document.getElementById('result-reasons');
-                const domainsSection = document.getElementById('domains-section');
-                const suspiciousDomains = document.getElementById('suspicious-domains');
-                const urlsSection = document.getElementById('urls-section');
-                const extractedUrls = document.getElementById('extracted-urls');
-                const recommendations = document.getElementById('recommendations');
-                
-                // Clear previous results
-                resultReasons.innerHTML = '';
-                suspiciousDomains.innerHTML = '';
-                extractedUrls.innerHTML = '';
-                recommendations.innerHTML = '';
-                
-                if (result.is_suspicious) {
-                    resultBox.className = 'result-box suspicious';
-                    resultTitle.textContent = '⚠️ Suspicious Message Detected';
-                } else {
-                    resultBox.className = 'result-box safe';
-                    resultTitle.textContent = '✅ Message Appears Safe';
-                }
-                
-                resultConfidence.textContent = `Confidence: ${Math.round(result.confidence * 100)}%`;
-                
-                // Add reasons
-                result.reasons.forEach(reason => {
-                    const li = document.createElement('li');
-                    li.textContent = reason;
-                    resultReasons.appendChild(li);
-                });
-                
-                // Add suspicious domains if any
-                if (result.suspicious_domains && result.suspicious_domains.length > 0) {
-                    domainsSection.style.display = 'block';
-                    
-                    result.suspicious_domains.forEach(domain => {
-                        const div = document.createElement('div');
-                        div.className = domain.score > 0.7 ? 'domain-item high-risk' : 'domain-item medium-risk';
-                        
-                        let content = `<strong>${domain.domain}</strong> - Risk: ${Math.round(domain.score * 100)}%`;
-                        if (domain.in_blocklist) {
-                            content += ' <span class="badge bg-danger">In Blocklist</span>';
-                        }
-                        
-                        if (domain.indicators && domain.indicators.length > 0) {
-                            content += '<ul>';
-                            domain.indicators.forEach(indicator => {
-                                content += `<li>${indicator}</li>`;
-                            });
-                            content += '</ul>';
-                        }
-                        
-                        div.innerHTML = content;
-                        suspiciousDomains.appendChild(div);
-                    });
-                } else {
-                    domainsSection.style.display = 'none';
-                }
-                
-                // Add extracted URLs if any
-                if (result.extracted_urls && result.extracted_urls.length > 0) {
-                    urlsSection.style.display = 'block';
-                    
-                    result.extracted_urls.forEach(url => {
-                        const div = document.createElement('div');
-                        div.textContent = url;
-                        extractedUrls.appendChild(div);
-                    });
-                } else {
-                    urlsSection.style.display = 'none';
-                }
-                
-                // Add recommendations
-                if (result.is_suspicious) {
-                    recommendations.innerHTML = `
-                        <div class="alert alert-danger">
-                            <h5>This message appears to be a phishing attempt!</h5>
-                            <ul>
-                                <li>Do not click any links or download attachments</li>
-                                <li>Do not reply to the sender</li>
-                                <li>Report this email to your IT security team</li>
-                                <li>If you've already clicked links or provided information, change your passwords immediately</li>
-                            </ul>
-                        </div>
-                    `;
-                } else {
-                    recommendations.innerHTML = `
-                        <div class="alert alert-success">
-                            <h5>This message appears to be legitimate</h5>
-                            <p>However, always be cautious when:</p>
-                            <ul>
-                                <li>Clicking links in emails</li>
-                                <li>Downloading attachments</li>
-                                <li>Providing personal or financial information</li>
-                            </ul>
-                        </div>
-                    `;
-                }
-                
-                // Show result
-                document.getElementById('result').style.display = 'block';
-            } catch (error) {
-                console.error('Error:', error);
-                alert('An error occurred while analyzing the message');
-            }
-        });
-    </script>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer-section">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <h4><i class="bi bi-shield-lock-fill"></i> PhishLock AI</h4>
+                    <p>Advanced AI-Powered Phishing Detection</p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <p>Created for the SANS AI Cybersecurity Hackathon</p>
+                    <p>Open Source under MIT License</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/static/js/app.js"></script>
 </body>
 </html>
