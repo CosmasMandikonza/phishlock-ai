@@ -140,7 +140,7 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 - SANS Institute for hosting the AI Cybersecurity Hackathon
 - The open-source community for providing the tools and frameworks used in this project
-- All contributors who helped shape and improve PhishLock AI
+- Future contributors who will help shape and improve PhishLock AI
 
 ## Contact
 
