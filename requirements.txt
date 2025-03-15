@@ -5,3 +5,5 @@ requests>=2.26.0
 aiofiles>=0.7.0
 jinja2>=3.0.1
 python-multipart>=0.0.5
+beautifulsoup4>=4.9.3  # For logo_detector
+pillow>=8.2.0  # For image handling
