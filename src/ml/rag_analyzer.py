@@ -235,31 +235,28 @@ class RAGPhishingAnalyzer:
         
         return min(1.0, score)  # Ensure score is between 0 and 1
     
-    def analyze_message(self, message: Dict[str, Any]) -> Dict[str, Any]:
-        """
-        Analyze a message for phishing using RAG and LLM.
-        
-        Args:
-            message: A dictionary containing 'sender', 'subject', and 'content' keys
-            
-        Returns:
-            Analysis results
-        """
-        # Retrieve relevant knowledge
-        relevant_knowledge = self.retrieve_relevant_knowledge(message)
-        
-        # Calculate heuristic score
-        heuristic_score = self.calculate_heuristic_score(message, relevant_knowledge)
-        
+    
+def analyze_message(self, message: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Analyze a message for phishing using RAG and LLM.
+    """
+    # Retrieve relevant knowledge
+    relevant_knowledge = self.retrieve_relevant_knowledge(message)
+    
+    # Calculate heuristic score
+    heuristic_score = self.calculate_heuristic_score(message, relevant_knowledge)
+    
+    # Use LLM if OpenAI API key is available and client is initialized
+    llm_result = None
+    if hasattr(self, 'client') and self.client:
         # If heuristic score is very high or very low, we might skip LLM to save costs
         skip_llm = heuristic_score > 0.85 or heuristic_score < 0.15
         
-        llm_result = None
         if not skip_llm:
-            # Generate prompt with context
-            prompt = self.generate_prompt_with_context(message, relevant_knowledge)
-            
             try:
+                # Generate prompt with context
+                prompt = self.generate_prompt_with_context(message, relevant_knowledge)
+                
                 # Call the LLM
                 response = self.client.chat.completions.create(
                     model="gpt-3.5-turbo",
@@ -282,87 +279,79 @@ class RAGPhishingAnalyzer:
                     if start_idx >= 0 and end_idx > start_idx:
                         json_str = content[start_idx:end_idx]
                         llm_result = json.loads(json_str)
-                    else:
-                        # Fallback if JSON extraction fails
-                        is_suspicious = "phishing" in content.lower() or "suspicious" in content.lower()
-                        llm_result = {
-                            "is_suspicious": is_suspicious,
-                            "confidence": 0.6 if is_suspicious else 0.4,
-                            "reasons": ["AI detected suspicious patterns" if is_suspicious else "No suspicious patterns detected"],
-                            "tactics_used": list(relevant_knowledge["tactics"].keys()),
-                            "impersonated_brand": relevant_knowledge["brand_impersonation"]["name"] if relevant_knowledge["brand_impersonation"] else None
-                        }
                 except Exception as e:
                     print(f"Error parsing LLM response: {e}")
-                    llm_result = None
             except Exception as e:
                 print(f"Error calling LLM: {e}")
-                llm_result = None
+    
+    # Combine heuristic and LLM analysis if available, otherwise use heuristic only
+    if llm_result:
+        # Weighted average of heuristic and LLM scores
+        final_score = (heuristic_score * 0.4) + (llm_result.get("confidence", 0.5) * 0.6)
+        final_is_suspicious = llm_result.get("is_suspicious", False)
         
-        # Combine heuristic and LLM analysis
-        if llm_result:
-            # Weighted average of heuristic and LLM scores
-            final_score = (heuristic_score * 0.4) + (llm_result.get("confidence", 0.5) * 0.6)
-            final_is_suspicious = llm_result.get("is_suspicious", False)
-            
-            # In case of high disagreement, lean toward suspicion for safety
-            if abs(heuristic_score - llm_result.get("confidence", 0.5)) > 0.4:
-                final_is_suspicious = heuristic_score > 0.5 or llm_result.get("is_suspicious", False)
-            
-            reasons = llm_result.get("reasons", [])
-            
-            # Add heuristic reasons
-            if relevant_knowledge["brand_impersonation"]:
-                brand = relevant_knowledge["brand_impersonation"]["name"]
-                reasons.append(f"Potential {brand} brand impersonation detected")
-            
-            for tactic_name in relevant_knowledge["tactics"].keys():
-                if tactic_name not in str(reasons).lower():
-                    reasons.append(f"{tactic_name.capitalize()} tactics detected in message")
-            
-            return {
-                "is_suspicious": final_is_suspicious,
-                "confidence": final_score,
-                "reasons": reasons,
-                "tactics_used": llm_result.get("tactics_used", list(relevant_knowledge["tactics"].keys())),
-                "impersonated_brand": llm_result.get("impersonated_brand") or (
-                    relevant_knowledge["brand_impersonation"]["name"] if relevant_knowledge["brand_impersonation"] else None
-                ),
-                "knowledge_used": {
-                    "tactics": list(relevant_knowledge["tactics"].keys()),
-                    "brand_impersonation": relevant_knowledge["brand_impersonation"]["name"] if relevant_knowledge["brand_impersonation"] else None,
-                    "patterns": [p["pattern"] for p in relevant_knowledge["patterns"]]
-                },
-                "heuristic_score": heuristic_score
-            }
-        else:
-            # Fallback to heuristic analysis only
-            is_suspicious = heuristic_score > 0.5
-            reasons = []
-            
-            # Generate reasons based on heuristics
-            if relevant_knowledge["brand_impersonation"]:
-                brand = relevant_knowledge["brand_impersonation"]["name"]
-                reasons.append(f"Potential {brand} brand impersonation detected")
-            
-            for tactic_name, tactic_info in relevant_knowledge["tactics"].items():
-                reasons.append(f"{tactic_name.capitalize()} tactics detected: {', '.join(tactic_info['found_indicators'][:3])}")
-            
-            if not reasons and is_suspicious:
-                reasons.append("Suspicious patterns detected by heuristic analysis")
-            elif not reasons:
-                reasons.append("No suspicious patterns detected")
-            
-            return {
-                "is_suspicious": is_suspicious,
-                "confidence": heuristic_score,
-                "reasons": reasons,
-                "tactics_used": list(relevant_knowledge["tactics"].keys()),
-                "impersonated_brand": relevant_knowledge["brand_impersonation"]["name"] if relevant_knowledge["brand_impersonation"] else None,
-                "knowledge_used": {
-                    "tactics": list(relevant_knowledge["tactics"].keys()),
-                    "brand_impersonation": relevant_knowledge["brand_impersonation"]["name"] if relevant_knowledge["brand_impersonation"] else None,
-                    "patterns": [p["pattern"] for p in relevant_knowledge["patterns"]]
-                },
-                "heuristic_score": heuristic_score
-            }
+        # In case of high disagreement, lean toward suspicion for safety
+        if abs(heuristic_score - llm_result.get("confidence", 0.5)) > 0.4:
+            final_is_suspicious = heuristic_score > 0.5 or llm_result.get("is_suspicious", False)
+        
+        reasons = llm_result.get("reasons", [])
+        
+        # Add heuristic reasons
+        if relevant_knowledge["brand_impersonation"]:
+            brand = relevant_knowledge["brand_impersonation"]["name"]
+            reasons.append(f"Potential {brand} brand impersonation detected")
+        
+        for tactic_name in relevant_knowledge["tactics"].keys():
+            if tactic_name not in str(reasons).lower():
+                reasons.append(f"{tactic_name.capitalize()} tactics detected in message")
+        
+        return {
+            "is_suspicious": final_is_suspicious,
+            "confidence": final_score,
+            "reasons": reasons,
+            "tactics_used": llm_result.get("tactics_used", list(relevant_knowledge["tactics"].keys())),
+            "impersonated_brand": llm_result.get("impersonated_brand") or (
+                relevant_knowledge["brand_impersonation"]["name"] if relevant_knowledge["brand_impersonation"] else None
+            ),
+            "knowledge_used": {
+                "tactics": list(relevant_knowledge["tactics"].keys()),
+                "brand_impersonation": relevant_knowledge["brand_impersonation"]["name"] if relevant_knowledge["brand_impersonation"] else None,
+                "patterns": [p["pattern"] for p in relevant_knowledge["patterns"]]
+            },
+            "heuristic_score": heuristic_score
+        }
+    else:
+        # Fallback to heuristic analysis only
+        is_suspicious = heuristic_score > 0.5
+        reasons = []
+        
+        # Generate reasons based on heuristics
+        if relevant_knowledge["brand_impersonation"]:
+            brand = relevant_knowledge["brand_impersonation"]["name"]
+            reasons.append(f"Potential {brand} brand impersonation detected")
+        
+        for tactic_name, tactic_info in relevant_knowledge["tactics"].items():
+            if tactic_info.get('found_indicators'):
+                indicators = tactic_info['found_indicators'][:2]  # Limit to 2 indicators for brevity
+                indicators_str = ', '.join([f'"{i}"' for i in indicators])
+                reasons.append(f"{tactic_name.capitalize()} manipulation detected: {indicators_str}")
+        
+        if not reasons and is_suspicious:
+            reasons.append("Suspicious patterns detected by heuristic analysis")
+        elif not reasons:
+            reasons.append("No suspicious patterns detected")
+        
+        return {
+            "is_suspicious": is_suspicious,
+            "confidence": heuristic_score,
+            "reasons": reasons,
+            "tactics_used": list(relevant_knowledge["tactics"].keys()),
+            "impersonated_brand": relevant_knowledge["brand_impersonation"]["name"] if relevant_knowledge["brand_impersonation"] else None,
+            "knowledge_used": {
+                "tactics": list(relevant_knowledge["tactics"].keys()),
+                "brand_impersonation": relevant_knowledge["brand_impersonation"]["name"] if relevant_knowledge["brand_impersonation"] else None,
+                "patterns": [p["pattern"] for p in relevant_knowledge["patterns"]]
+            },
+            "heuristic_score": heuristic_score,
+            "analysis_method": "heuristic_only"  # Indicate we used heuristic analysis only
+        }

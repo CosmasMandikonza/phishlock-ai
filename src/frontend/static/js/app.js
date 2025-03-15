@@ -1,6 +1,5 @@
 /**
- * PhishLock AI - Main Application Script
- * Created for SANS AI Cybersecurity Hackathon
+ * PhishLock AI - Main Application Script with Sidebar Support
  */
 
 // Global variables
@@ -19,6 +18,9 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Fetch system stats
     fetchSystemStats();
+    
+    // Set up sidebar functionality
+    setupSidebar();
 });
 
 /**
@@ -29,9 +31,11 @@ function initializeUI() {
     const hasHtmlCheckbox = document.getElementById('has-html');
     const htmlInput = document.querySelector('.html-input');
     
-    hasHtmlCheckbox.addEventListener('change', function() {
-        htmlInput.style.display = this.checked ? 'block' : 'none';
-    });
+    if (hasHtmlCheckbox && htmlInput) {
+        hasHtmlCheckbox.addEventListener('change', function() {
+            htmlInput.style.display = this.checked ? 'block' : 'none';
+        });
+    }
     
     // Initialize gauge chart
     initializeGaugeChart();
@@ -39,7 +43,85 @@ function initializeUI() {
     // Initialize detection chart
     initializeDetectionChart();
 }
+// Add to app.js, right after the detectionChart initialization
 
+// Initialize timeline chart
+function initializeTimelineChart() {
+    const timelineCtx = document.getElementById('timeline-chart');
+    
+    if (!timelineCtx) return;
+    
+    // Generate some sample data for demonstration
+    const labels = [];
+    const phishingData = [];
+    const legitimateData = [];
+    
+    // Create data for the last 24 hours
+    const now = new Date();
+    for (let i = 23; i >= 0; i--) {
+        const hour = new Date(now);
+        hour.setHours(now.getHours() - i);
+        labels.push(hour.getHours() + ':00');
+        
+        // Generate random data for demo
+        phishingData.push(Math.floor(Math.random() * 10));
+        legitimateData.push(Math.floor(Math.random() * 15));
+    }
+    
+    timelineChart = new Chart(timelineCtx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [
+                {
+                    label: 'Phishing Detected',
+                    data: phishingData,
+                    borderColor: '#ff4757',
+                    backgroundColor: 'rgba(255, 71, 87, 0.1)',
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.4
+                },
+                {
+                    label: 'Legitimate Messages',
+                    data: legitimateData,
+                    borderColor: '#2ed573',
+                    backgroundColor: 'rgba(46, 213, 115, 0.1)',
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.4
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'top',
+                },
+                title: {
+                    display: true,
+                    text: 'Message Analysis Activity (Last 24 Hours)'
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Number of Messages'
+                    }
+                },
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Time'
+                    }
+                }
+            }
+        }
+    });
+}
 /**
  * Set up event listeners
  */
@@ -97,6 +179,17 @@ function setupEventListeners() {
                     top: targetElement.offsetTop - 70,
                     behavior: 'smooth'
                 });
+                
+                // On mobile, close the sidebar after navigation
+                if (window.innerWidth < 768) {
+                    const sidebar = document.querySelector('.sidebar');
+                    if (sidebar) {
+                        sidebar.classList.remove('active');
+                    }
+                }
+                
+                // Update active link
+                updateActiveLink(this);
             }
         });
     });
@@ -171,6 +264,108 @@ function initializeDetectionChart() {
             maintainAspectRatio: true
         }
     });
+}
+
+/**
+ * Set up sidebar functionality
+ */
+function setupSidebar() {
+    // Mobile menu toggle
+    const menuToggle = document.getElementById('menu-toggle');
+    const sidebar = document.querySelector('.sidebar');
+    
+    if (menuToggle && sidebar) {
+        menuToggle.addEventListener('click', function() {
+            sidebar.classList.toggle('active');
+        });
+    }
+    
+    // Close sidebar when clicking outside on mobile
+    document.addEventListener('click', function(e) {
+        if (window.innerWidth < 768 && 
+            sidebar && 
+            sidebar.classList.contains('active') && 
+            !sidebar.contains(e.target) && 
+            e.target !== menuToggle) {
+            sidebar.classList.remove('active');
+        }
+    });
+    
+    // Set active link based on scroll position
+    window.addEventListener('scroll', debounce(function() {
+        setActiveMenuItemOnScroll();
+    }, 100));
+    
+    // Initially set active link based on location
+    setActiveMenuItemOnScroll();
+}
+
+/**
+ * Update active link in sidebar
+ * @param {Element} clickedLink - The link that was clicked
+ */
+function updateActiveLink(clickedLink) {
+    // Remove active class from all links
+    document.querySelectorAll('.sidebar-menu li').forEach(item => {
+        item.classList.remove('active');
+    });
+    
+    // Add active class to the parent li of the clicked link
+    if (clickedLink) {
+        clickedLink.closest('li').classList.add('active');
+    }
+}
+
+/**
+ * Set active menu item based on scroll position
+ */
+function setActiveMenuItemOnScroll() {
+    // Get all sections
+    const sections = document.querySelectorAll('section[id]');
+    let currentSection = '';
+    
+    // Find which section is in view
+    sections.forEach(section => {
+        const sectionTop = section.offsetTop;
+        const sectionHeight = section.offsetHeight;
+        
+        if (window.scrollY >= sectionTop - 100 && window.scrollY < sectionTop + sectionHeight - 100) {
+            currentSection = section.getAttribute('id');
+        }
+    });
+    
+    // Update active link in menu
+    if (currentSection) {
+        document.querySelectorAll('.sidebar-menu li').forEach(item => {
+            item.classList.remove('active');
+            
+            const link = item.querySelector(`a[href="#${currentSection}"]`);
+            if (link) {
+                item.classList.add('active');
+            }
+        });
+    }
+}
+
+/**
+ * Debounce function for scroll events
+ * @param {Function} func - Function to debounce
+ * @param {number} delay - Delay in milliseconds
+ * @returns {Function} - Debounced function
+ */
+function debounce(func, delay) {
+    let timeout;
+    
+    return function() {
+        const context = this;
+        const args = arguments;
+        
+        clearTimeout(timeout);
+        
+        timeout = setTimeout(function() {
+            func.apply(context, args);
+        }, delay);
+    };
 }
 
 /**
@@ -308,7 +503,7 @@ function displayAnalysisResult(result) {
             'reward': 'Exploits desire for rewards or financial gain',
             'curiosity': 'Exploits natural curiosity to encourage clicking',
             'scarcity': 'Creates impression of limited availability to drive action',
-            'social proof': 'Leverages human tendency to follow what others do',
+            'social_proof': 'Leverages human tendency to follow what others do',
             'pressure': 'Applies pressure to make victims act without thinking',
             'generic_greeting': 'Uses generic greetings instead of personalized ones',
             'poor_grammar': 'Contains language errors often seen in phishing'

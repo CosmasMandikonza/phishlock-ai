@@ -1,0 +1,20 @@
+[
+    {
+      "name": "Bank phishing example",
+      "sender": "secure-banking@bank0famerica-secure.com",
+      "subject": "URGENT: Your account requires verification",
+      "content": "Dear valued customer,\n\nWe have detected unusual activity on your Bank of America account. To ensure your account security, please verify your information immediately by clicking on the link below:\n\nhttps://bank0famerica-secure.com/verify\n\nFailure to verify within 24 hours will result in your account being temporarily suspended.\n\nThank you,\nBank of America Security Team"
+    },
+    {
+      "name": "Password reset phishing",
+      "sender": "noreply@microsoft-verify.xyz",
+      "subject": "Your Microsoft password is about to expire",
+      "content": "Your Microsoft 365 password is set to expire today. To ensure uninterrupted access to your email and services, please update your password immediately.\n\nClick here to reset: https://ms-account-verify.xyz/password-reset\n\nIgnoring this message will result in loss of access to your account.\n\nThank you,\nMicrosoft Security"
+    },
+    {
+      "name": "Legitimate message",
+      "sender": "newsletter@github.com",
+      "subject": "GitHub Changelog: What's new this month",
+      "content": "Here's what's new on GitHub this month:\n\n- Improved Copilot features\n- New team collaboration tools\n- Enhanced security features\n\nCheck out the details at https://github.blog/changelog\n\nYour GitHub Team"
+    }
+  ]

@@ -14,8 +14,8 @@ import os
 class LogoDetector:
     def __init__(self):
         """Initialize the logo detector."""
-        # Dictionary of brand logo fingerprints (simplified for implementation)
-        # In a real implementation, this would use computer vision techniques
+        # Dictionary of brand logo fingerprints 
+        #This is a simplfied for more sophistication we can use deep learning models
         self.brand_logos = {
             "microsoft": {
                 "patterns": [
@@ -191,8 +191,7 @@ class LogoDetector:
                         match_reason.append(f"Alt text contains {keyword}")
                         break
                 
-                # For a real implementation, here we would download and analyze the image content
-                # For now, we just use the patterns and keywords
+                #Here we would download and analyze the image content For now, we just use the patterns and keywords
                 
                 if score > 0.3:
                     brand_matches.append({
