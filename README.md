@@ -145,7 +145,7 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 ## Contact
 
 - GitHub Issues: Preferred method for bug reports and feature requests
-- Email: your.email@example.com (replace with your actual contact)
+- Email: cmandikonza@css.edu (replace with your actual contact)
 
 ---
 
