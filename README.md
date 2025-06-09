@@ -1,4 +1,4 @@
-﻿# PhishLock AI**
+﻿# **PhishLock AI**
 
 ![PhishLock AI Logo](https://raw.githubusercontent.com/yourusername/phishlock-ai/main/src/frontend/static/images/shield.svg)
 
